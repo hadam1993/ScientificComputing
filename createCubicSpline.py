@@ -4,6 +4,36 @@
 Created on Thu Feb 20 11:38:25 2020
 
 @author: ahonts
+
+This program for project 1 for the scientific
+computing course. The project was to create a program
+that takes in four data points and then constructs a
+cubic spline that maintains C2 continuity.
+The program gives the user the option to view an example
+with four data points, constructs a cubic spline from
+the data points, and then takes samples in between the
+first and last input data points to create a plot. 
+In the plot there is the original function that was used
+to start with 4 data points and there is also the
+interpolated function that was created via a cubic spline.
+
+The user of this program also has the capability to 
+input their own data and view the results from a cubic
+spline that is created from their data.
+
+The code for the construction of the cubic splines
+can be found in the following methods:
+
+create_banded_mat() this creates the matrix A
+
+create_b_mat() this creates the vector b
+
+spline_func() the function used to get outputs 
+from the spline
+
+interpolate() decides which slopes to give to
+spline_func() based on where the sample was taken
+
 """
 
 import numpy as np
@@ -262,6 +292,7 @@ def four_point_example():
     init_slope = 0.0
     end_slope = 0.0
     s = np.zeros((len(data),1))
+    #Create the matix A to solve for the unknown slopes
     A = create_banded_mat(data)
     #Create the vector b to solve for the unknown slopes
     b = create_b_mat(data,s)
@@ -286,9 +317,6 @@ def four_point_example():
     #plot the resulting interpolation
     fig, ax = plt.subplots()
     stars, = ax.plot([x[0] for x in data],[x[1] for x in data],'r*',label='stars')
-    #ax.plot(samples,y_hat,'g-')
-    #ax.plot(samples,y_actual,'b-')
-    #plt.show()
     interpolated, = ax.plot(samples,y_hat,'g--', label='Line 2')
     actual, = ax.plot(samples,y_actual,'b-', label='Line 1')
     ax.set_xlabel('input axis')
