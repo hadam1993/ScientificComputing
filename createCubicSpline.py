@@ -330,81 +330,162 @@ def run_example_or_user():
                     " your own data:\n")
     return example
 
+def while_y_or_n(answer, func):
+    while answer != 'y' and answer != 'n':
+        answer = func()
+    return answer
+
+def random_points_or_own():
+    answer = input("Would you like to see random data "+\
+                   "or enter your own data?\n"
+                   "input y for random"+\
+                    " data points\ninput n to create"+\
+                    " your own data:\n")
+    return answer
+
+def show_data(data,init_slope,end_slope):
+    """
+    This function solves for the matricies A and b
+    and then displays the data on a graph
+    """
+    #Create the vector s for the slopes of the splines
+    s = np.zeros((len(data),1))
+    #Create the Matrix A to solve for the unknown slopes
+    A = create_banded_mat(data)
+    #Create the vector b to solve for the unknown slopes
+    b = create_b_mat(data,s)
+    #Solve for the unknown slopes using numpy's 
+    #Linear algebra solver
+    s_2 = solve(A,b)
+    #Fill the slopes into the s vector
+    s[1:len(data)-1][:] = s_2
+    #Set the initial slope
+    s[0][:] = init_slope
+    #Set the end slope
+    s[len(s)-1][:] = end_slope
+    #Get Samples ranging from the smallest input value
+    #to the highest input value
+    samples = np.arange(data[0][0],data[len(data)-1][0],.01)
+    #Interpolate the sample inputs and store the 
+    #interpolated outputs in y_hat
+    y_hat = interpolate(data,samples,s)
+    #plot the resulting interpolation
+    fig, ax = plt.subplots()
+    stars, = ax.plot([x[0] for x in data],[x[1] for x in data],'r*')
+    interpolated, = ax.plot(samples,y_hat,'g--',label='interpolated')
+    ax.set_xlabel('input axis')
+    ax.set_ylabel('output axis')
+    plt.legend([stars,interpolated], ['Given Data Points','Interpolated Function'])
+    plt.show()
+    
+def get_num_data_and_slopes():
+    """
+    Asks the user for number of data points
+    they would like, the initial slope and end 
+    slope.
+    """
+    #Ask the user for the number of data points
+    #that they will enter
+    num_data_pts = get_num_data_pts()
+    #Ensure that the user entered a valid number
+    while num_data_pts == False:
+        num_data_pts = get_num_data_pts()
+    #Ask the user for an initaial slope
+    init_slope = get_init_slope()
+    #Ensure that the user entered a valid number
+    #0.0 is equivalent to False in python
+    #init_slope != 0.0 allows the user to enter that number
+    while init_slope == False and init_slope != 0.0:
+        init_slope = get_init_slope()
+    #Ask the user for an initaial slope
+    end_slope = get_end_slope()
+    #Ensure that the user entered a valid number
+    while end_slope == False and end_slope != 0.0:
+        end_slope = get_end_slope()
+    return (num_data_pts,init_slope,end_slope)
+
+def print_data_points(data):
+    print("\nThe Following data points were generated"+\
+          "Randomly:\n\n")
+    for d in data:
+        print("(%f,%f)\n"%(d[0],d[1]))
+
+def random_points():
+    """
+    This function Generates random data points
+    with the domain between -10 and 10
+    The end of this function will display 
+    the graph of the resulting spline
+    """
+    #List of inputs
+    xs = []
+    # List of tuples that represent (x,y) coordinates
+    data = []
+    num_data_pts,init_slope,end_slope = get_num_data_and_slopes()
+    #Get all data points from the user
+    while len(data) < num_data_pts:
+        #Get an input value
+        x = np.random.randint(-10,10)*np.random.random()
+        while x in xs:
+            x = np.random.randint(-10,10)*np.random.random()
+        #Get the corresponding output value
+        y = np.random.randint(-10,10)*np.random.random()
+        #add x to the list of used inputs
+        xs.append(x)
+        #add the coordiante (x,y) to the data list
+        data.append((x,y))
+        #Ensure the data is sorted by input values
+        #in ascending order
+        data = sorted(data, key=lambda x: x[0])
+    print_data_points(data)
+    show_data(data,init_slope,end_slope)
+
+def own_data():
+    """
+    This function has the user enter their
+    own data points.
+    The end of this function will display 
+    the graph of the resulting spline.
+    """
+    #List of inputs
+    xs = []
+    # List of tuples that represent (x,y) coordinates
+    data = []
+    num_data_pts,init_slope,end_slope = get_num_data_and_slopes()
+    #Get all data points from the user
+    while len(data) < num_data_pts:
+        #Get an input value
+        x = get_input(xs)
+        while x == False and x != 0.0:
+            x = get_input(xs)
+        #Get the corresponding output value
+        y = get_output(x)
+        while y == False and y != 0.0:
+            y = get_output(x)
+        #add x to the list of used inputs
+        xs.append(x)
+        #add the coordiante (x,y) to the data list
+        data.append((x,y))
+        #Ensure the data is sorted by input values
+        #in ascending order
+        data = sorted(data, key=lambda x: x[0])
+    show_data(data,init_slope,end_slope)
 
 def __main__():
     example = run_example_or_user()
+    '''
     while example != 'y' and example != 'n':
         example = run_example_or_user()
+    '''
+    example = while_y_or_n(example, run_example_or_user)
     if example == 'y':
         four_point_example()
     else:
-        #List of inputs
-        xs = []
-        # List of tuples that represent (x,y) coordinates
-        data = []
-        #Ask the user for the number of data points
-        #that they will enter
-        num_data_pts = get_num_data_pts()
-        #Ensure that the user entered a valid number
-        while num_data_pts == False:
-            num_data_pts = get_num_data_pts()
-        #Ask the user for an initaial slope
-        init_slope = get_init_slope()
-        #Ensure that the user entered a valid number
-        #0.0 is equivalent to False in python
-        #init_slope != 0.0 allows the user to enter that number
-        while init_slope == False and init_slope != 0.0:
-            init_slope = get_init_slope()
-        #Ask the user for an initaial slope
-        end_slope = get_end_slope()
-        #Ensure that the user entered a valid number
-        while end_slope == False and end_slope != 0.0:
-            end_slope = get_end_slope()
-        #Get all data points from the user
-        while len(data) < num_data_pts:
-            #Get an input value
-            x = get_input(xs)
-            while x == False and x != 0.0:
-                x = get_input(xs)
-            #Get the corresponding output value
-            y = get_output(x)
-            while y == False and y != 0.0:
-                y = get_output(x)
-            #add x to the list of used inputs
-            xs.append(x)
-            #add the coordiante (x,y) to the data list
-            data.append((x,y))
-            #Ensure the data is sorted by input values
-            #in ascending order
-            data = sorted(data, key=lambda x: x[0])
-        #Create the vector s for the slopes of the splines
-        s = np.zeros((len(data),1))
-        #Create the Matrix A to solve for the unknown slopes
-        A = create_banded_mat(data)
-        #Create the vector b to solve for the unknown slopes
-        b = create_b_mat(data,s)
-        #Solve for the unknown slopes using numpy's 
-        #Linear algebra solver
-        s_2 = solve(A,b)
-        #Fill the slopes into the s vector
-        s[1:len(data)-1][:] = s_2
-        #Set the initial slope
-        s[0][:] = init_slope
-        #Set the end slope
-        s[len(s)-1][:] = end_slope
-        #Get Samples ranging from the smallest input value
-        #to the highest input value
-        samples = np.arange(data[0][0],data[len(data)-1][0],.01)
-        #Interpolate the sample inputs and store the 
-        #interpolated outputs in y_hat
-        y_hat = interpolate(data,samples,s)
-        #plot the resulting interpolation
-        fig, ax = plt.subplots()
-        stars, = ax.plot([x[0] for x in data],[x[1] for x in data],'r*')
-        interpolated, = ax.plot(samples,y_hat,'g--',label='interpolated')
-        ax.set_xlabel('input axis')
-        ax.set_ylabel('output axis')
-        plt.legend([stars,interpolated], ['Given Data Points','Interpolated Function'])
-        plt.show()
+        answer = random_points_or_own()
+        answer = while_y_or_n(answer, random_points_or_own)
+        if answer == 'y':
+            random_points()
+        else:
+            own_data()
 
 __main__()
