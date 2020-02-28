@@ -1,7 +1,12 @@
 # ScientificComputing Project 1
 
 The program for project 1 for the scientific
-computing course. The project was to create a program
+computing course. The program to run this code 
+is in the python file createCubicSpline.py
+Dependencies for this program are numpy and
+matplotlib.
+
+The project was to create a program
 that takes in four data points and then constructs a
 cubic spline that maintains C2 continuity.
 The program gives the user the option to view an example
